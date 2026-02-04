@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "gis": {
+      "command": "uvx",
+      "args": ["gis-mcp"]
+    },
+    "qgis": {
+      "command": "uvx",
+      "args": ["qgis-mcp"]
+    },
+    "nasa": {
+      "command": "npx",
+      "args": ["-y", "@programcomputer/nasa-mcp-server@latest"],
+      "env": {
+        "NASA_API_KEY": "DEMO_KEY"
+      }
+    }
+  },
+  "hooks": {}
+}
