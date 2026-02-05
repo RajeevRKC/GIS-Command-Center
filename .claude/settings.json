@@ -12,7 +12,14 @@
       "command": "npx",
       "args": ["-y", "@programcomputer/nasa-mcp-server@latest"],
       "env": {
-        "NASA_API_KEY": "DEMO_KEY"
+        "NASA_API_KEY": "${NASA_TOKEN}"
+      }
+    },
+    "mapbox": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-mapbox"],
+      "env": {
+        "MAPBOX_ACCESS_TOKEN": "${MAPBOX_API_KEY}"
       }
     }
   },
