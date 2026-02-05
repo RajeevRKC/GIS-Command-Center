@@ -5,6 +5,50 @@
 **Location:** `D:/My-Applications/70-GIS-Command-Center`
 **Created:** 2026-02-04
 **Maintainer:** MasterMindMandan
+**Orchestrator:** ATLAS (Advanced Terrain & Location Analysis System)
+
+---
+
+## Orchestrator: ATLAS
+
+**ATLAS** is the GIS Command Center's orchestrator -- a seasoned geospatial strategist who thinks in layers. ATLAS routes all incoming geospatial tasks to the appropriate specialist agent, chains multi-skill workflows, and manages cross-hub data flows.
+
+**Persona Profile:** `.claude/core/ATLAS.md`
+
+**Key Capabilities:**
+- Intelligent routing across 12 skills and 7 specialist agents
+- Multi-skill workflow chaining (e.g., satellite processing -> classification -> web map)
+- Cross-hub integration with Carbon Hub, Green Sciences, and Business DevCon
+- CRS verification protocol -- ATLAS insists on correct projections before any analysis
+- Work Files intake and data routing
+
+---
+
+## Specialist Agents (7 Total)
+
+| Agent | Color | Skills | Domain |
+|-------|-------|--------|--------|
+| **Spatial Analyst** | Navy | ark-gis-operations, ark-qgis-mapping, ark-arcgis-pro | Vector/raster geoprocessing, desktop GIS, CRS management |
+| **Remote Sensing Analyst** | Indigo | ark-remote-sensing, ark-earth-observation, ark-nasa-earthdata | Satellite imagery, spectral analysis, Earth observation platforms |
+| **Cartographer** | Teal | ark-web-mapping, ark-geocoding | Map design, web visualization, geocoding |
+| **Terrain Specialist** | Sienna | ark-lidar-pointcloud | LiDAR, DEM/DTM/DSM, terrain analysis, 3D surfaces |
+| **Hydrologist** | Cerulean | ark-hydrology | Watershed, flood modeling, drainage, water resources |
+| **Network Analyst** | Orange | ark-network-analysis | Transportation, routing, isochrones, accessibility |
+| **GeoAI Specialist** | Purple | ark-geospatial-ai | ML/DL classification, object detection, segmentation |
+
+**Agent files:** `.claude/agents/`
+
+### Agent Routing Table
+
+| Topic | Route To | Keywords |
+|-------|----------|----------|
+| Vector/raster operations, geoprocessing | Spatial Analyst | buffer, intersect, clip, dissolve, shapefile, CRS, QGIS, ArcGIS |
+| Satellite imagery, spectral analysis | Remote Sensing Analyst | Sentinel, Landsat, NDVI, GEE, NASA, STAC, radar |
+| Map design, web visualization | Cartographer | Folium, Leafmap, web map, choropleth, geocoding |
+| LiDAR, DEM, terrain, elevation | Terrain Specialist | LiDAR, point cloud, DEM, slope, hillshade |
+| Watershed, flood, water resources | Hydrologist | watershed, flood, drainage, stream, catchment |
+| Transportation, routing, accessibility | Network Analyst | OSMnx, routing, isochrone, shortest path |
+| ML/DL classification, object detection | GeoAI Specialist | machine learning, classification, torchgeo, SAM |
 
 ---
 
@@ -122,26 +166,41 @@ Add these to your `claude_desktop_config.json`:
 70-GIS-Command-Center/
 ├── .claude/
 │   ├── CLAUDE.md              # This file
-│   ├── settings.json          # MCP and hooks
-│   ├── skills/                # 12 GIS skills
-│   │   ├── ark-gis-operations/
-│   │   ├── ark-qgis-mapping/
-│   │   ├── ark-arcgis-pro/
-│   │   ├── ark-remote-sensing/
-│   │   ├── ark-earth-observation/
-│   │   ├── ark-nasa-earthdata/
-│   │   ├── ark-web-mapping/
-│   │   ├── ark-lidar-pointcloud/
-│   │   ├── ark-hydrology/
-│   │   ├── ark-network-analysis/
-│   │   ├── ark-geospatial-ai/
-│   │   └── ark-geocoding/
-│   └── agents/                # Specialized GIS agents
+│   ├── settings.json          # MCP servers and hooks
+│   ├── core/
+│   │   └── ATLAS.md           # Orchestrator persona and routing
+│   ├── agents/                # 7 specialist agents
+│   │   ├── spatial-analyst.md
+│   │   ├── remote-sensing-analyst.md
+│   │   ├── cartographer.md
+│   │   ├── terrain-specialist.md
+│   │   ├── hydrologist.md
+│   │   ├── network-analyst.md
+│   │   └── geoai-specialist.md
+│   └── skills/                # 12 GIS skills
+│       ├── ark-gis-operations/
+│       ├── ark-qgis-mapping/
+│       ├── ark-arcgis-pro/
+│       ├── ark-remote-sensing/
+│       ├── ark-earth-observation/
+│       ├── ark-nasa-earthdata/
+│       ├── ark-web-mapping/
+│       ├── ark-lidar-pointcloud/
+│       ├── ark-hydrology/
+│       ├── ark-network-analysis/
+│       ├── ark-geospatial-ai/
+│       └── ark-geocoding/
+│
+├── Work Files - GIS/          # Staging area (Commander's inbox)
+│   ├── _INBOX/                # Drop raw materials here
+│   └── _PROCESSING/           # Currently being organized
+│
 ├── data/
 │   ├── vector/                # Shapefiles, GeoJSON, GPKG
 │   ├── raster/                # GeoTIFF, COG, NetCDF
 │   ├── lidar/                 # LAS, LAZ, E57
-│   └── satellite/             # Sentinel, Landsat, MODIS
+│   ├── satellite/             # Sentinel, Landsat, MODIS
+│   └── nasa/                  # NASA harvested data (APOD, NEO, POWER)
 ├── projects/                  # Active GIS projects
 ├── outputs/
 │   ├── maps/                  # Generated maps
@@ -291,13 +350,32 @@ Training data -> ark-geospatial-ai -> Train model -> Inference -> Validate
 
 ---
 
-## Integration with Other Workspaces
+## Work Files Protocol
 
-| Workspace | Integration |
-|-----------|-------------|
-| Carbon & Meth Hub | Site analysis, land cover for carbon projects |
-| CineCrafter | Geospatial visualizations for video |
-| Business DevCon | Location intelligence for BD |
+When Commander drops materials in `Work Files - GIS/_INBOX/`:
+1. **Identify** - What project or analysis does this data support?
+2. **Inspect** - Check format, CRS, extent, attributes
+3. **Create** - Make project folder if new (`projects/{PROJECT-ID}/`)
+4. **Route** - Move to appropriate data directory or project folder
+5. **Notify** - Report what was organized and suggest next steps
+
+### Staging Workflow
+```
+Commander drops files -> _INBOX/ -> ATLAS identifies -> _PROCESSING/ -> Route to project/data
+```
+
+---
+
+## Cross-Hub Integration
+
+| Hub | Direction | Data Flow |
+|-----|-----------|-----------|
+| **Carbon & Meth Hub** (07) | Export | Spatial analysis, NDVI maps, land cover classification |
+| **Carbon & Meth Hub** (07) | Import | Project boundaries, monitoring sites |
+| **Green Sciences** (80) | Export | Remote sensing products, species distribution maps |
+| **Green Sciences** (80) | Import | Ecological survey data, field observations |
+| **Business DevCon** (54) | Export | Location intelligence, isochrones, site reports |
+| **CineCrafter** (01) | Export | Animated maps, 3D terrain renders |
 
 ---
 
@@ -322,4 +400,5 @@ Training data -> ark-geospatial-ai -> Train model -> Inference -> Validate
 ---
 
 *GIS Command Center - Where geography meets intelligence.*
-*Maintained by MasterMindMandan - 2026-02-04*
+*Orchestrated by ATLAS - 12 skills, 7 agents, 4 MCP servers*
+*Maintained by MasterMindMandan - 2026-02-06*

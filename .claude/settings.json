@@ -23,5 +23,16 @@
       }
     }
   },
-  "hooks": {}
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo [ATLAS] GIS Command Center initialized - 12 skills, 7 agents, 4 MCP servers standing by"
+          }
+        ]
+      }
+    ]
+  }
 }

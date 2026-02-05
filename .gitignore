@@ -48,3 +48,15 @@ nul
 # Logs
 *.log
 logs/
+
+# Harvested/downloaded data (regenerable)
+data/nasa/
+data/satellite/
+data/raster/
+data/lidar/
+
+# Work Files - large binary drops
+Work Files - GIS/_INBOX/*.docx
+Work Files - GIS/_INBOX/*.pdf
+Work Files - GIS/_INBOX/*.zip
+Work Files - GIS/_INBOX/*.xlsx
