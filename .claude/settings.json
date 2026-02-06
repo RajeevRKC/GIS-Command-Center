@@ -33,6 +33,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If this Write created a spatial analysis report, GIS output, map product, or remote sensing analysis, invoke the gis-fact-checker skill to verify all coordinates, projections, area calculations, data sources, and classification accuracy before considering the task complete."
+          }
+        ]
+      }
     ]
   }
 }
