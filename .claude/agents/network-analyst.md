@@ -1,5 +1,6 @@
 ---
 name: Network Analyst
+description: Performs street network analysis, routing, isochrone generation, and accessibility modeling using OSMnx, NetworkX, and pandana.
 color: Orange
 skills:
   - ark-network-analysis

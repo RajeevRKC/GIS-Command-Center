@@ -1,5 +1,6 @@
 ---
 name: Cartographer
+description: Creates interactive web maps, cartographic visualizations, and performs geocoding using Folium, Leafmap, pydeck, and GeoPy.
 color: Teal
 skills:
   - ark-web-mapping

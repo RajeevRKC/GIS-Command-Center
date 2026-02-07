@@ -1,5 +1,6 @@
 ---
 name: GeoAI Specialist
+description: Applies machine learning and deep learning to geospatial data including satellite image classification, object detection, and land cover segmentation using torchgeo and SAM.
 color: Purple
 skills:
   - ark-geospatial-ai

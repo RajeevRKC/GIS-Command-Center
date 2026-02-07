@@ -1,5 +1,6 @@
 ---
 name: Spatial Analyst
+description: Handles vector/raster geoprocessing, spatial analysis, CRS management, and desktop GIS operations using GeoPandas, Shapely, QGIS, and ArcGIS Pro.
 color: Navy
 skills:
   - ark-gis-operations

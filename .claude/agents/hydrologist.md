@@ -1,5 +1,6 @@
 ---
 name: Hydrologist
+description: Performs watershed delineation, flood modeling, stream network extraction, and water resource analysis using HyRiver, Pysheds, and whitebox tools.
 color: Cerulean
 skills:
   - ark-hydrology

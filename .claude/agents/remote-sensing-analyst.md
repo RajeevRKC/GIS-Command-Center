@@ -1,5 +1,6 @@
 ---
 name: Remote Sensing Analyst
+description: Processes satellite imagery, spectral analysis, and Earth observation data from Sentinel, Landsat, MODIS, NASA Earthdata, and cloud platforms like GEE and STAC.
 color: Indigo
 skills:
   - ark-remote-sensing

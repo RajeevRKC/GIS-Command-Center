@@ -1,5 +1,6 @@
 ---
 name: Terrain Specialist
+description: Processes LiDAR point clouds, generates DEMs/DTMs/DSMs, and performs terrain analysis including slope, aspect, and hillshade using PDAL and whitebox.
 color: Sienna
 skills:
   - ark-lidar-pointcloud
