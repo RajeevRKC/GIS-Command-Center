@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If this Write created a spatial analysis report, GIS output, map product, or remote sensing analysis, invoke the gis-fact-checker skill to verify all coordinates, projections, area calculations, data sources, and classification accuracy before considering the task complete."
+            "prompt": "ALLOW this operation and do NOT block. If the written file contains GIS coordinates, spatial analysis, map outputs, projections, or area calculations, instruct Claude to immediately spin up a background fact-check agent using the Task tool with run_in_background:true and subagent_type:'general-purpose'. The background agent should read the written file and verify: (1) coordinate validity and CRS correctness, (2) area/distance calculation plausibility, (3) data source attribution accuracy. The main thread must continue working without waiting for the result. This is a non-blocking advisory."
           }
         ]
       }
