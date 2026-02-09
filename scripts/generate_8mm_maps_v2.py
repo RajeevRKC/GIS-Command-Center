@@ -5,9 +5,9 @@ Additional Maps: Abu Ali Overview + DEM Elevation Visualizations
 Generates:
   1. Abu Ali Island overview map with ALL project overlays
   2. DEM elevation point map (survey points colored by elevation)
-  3. DEM interpolated surface map (gridded elevation)
-  4. DEM elevation classification map (below/optimal/above)
-  5. DEM elevation profile transect
+  3. DEM interpolated surface map (gridded elevation, clipped to planting zones)
+  4. DEM elevation classification map (below/optimal/above, clipped to planting zones)
+  5. Per-site elevation analysis with interpolated DEM per site
 """
 
 import geopandas as gpd
@@ -17,8 +17,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
+from matplotlib.path import Path as MplPath
 import numpy as np
 from scipy.interpolate import griddata
+from shapely.ops import unary_union
 from pathlib import Path
 
 # ── Paths ──
@@ -46,6 +48,28 @@ CONTROL_COLORS = {'Control_Unplanted_1': '#E53935',
                   'Control_Natural_Ref': '#1E88E5',
                   'Control_Substrate_1': '#FB8C00'}
 NURSERY_COLOR = '#8E24AA'
+
+
+def create_polygon_mask(geom, xi_grid, yi_grid):
+    """Create a boolean mask for grid points inside a polygon/multipolygon."""
+    grid_points = np.column_stack([xi_grid.ravel(), yi_grid.ravel()])
+    mask = np.zeros(len(grid_points), dtype=bool)
+
+    if geom.geom_type == 'MultiPolygon':
+        for poly in geom.geoms:
+            ext_path = MplPath(np.array(poly.exterior.coords))
+            mask |= ext_path.contains_points(grid_points)
+            for interior in poly.interiors:
+                hole_path = MplPath(np.array(interior.coords))
+                mask &= ~hole_path.contains_points(grid_points)
+    else:
+        ext_path = MplPath(np.array(geom.exterior.coords))
+        mask = ext_path.contains_points(grid_points)
+        for interior in geom.interiors:
+            hole_path = MplPath(np.array(interior.coords))
+            mask &= ~hole_path.contains_points(grid_points)
+
+    return mask.reshape(xi_grid.shape)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -284,29 +308,37 @@ print("  -> dem_elevation_points.png")
 
 
 # ═══════════════════════════════════════════════════════════
-# DEM MAP 2: INTERPOLATED ELEVATION SURFACE
+# DEM MAP 2: INTERPOLATED ELEVATION SURFACE (CLIPPED TO PLANTING ZONES)
 # ═══════════════════════════════════════════════════════════
-print("[4/6] Creating DEM Interpolated Surface Map...")
+print("[4/6] Creating DEM Interpolated Surface Map (clipped to planting zones)...")
 
 # Extract coordinates and elevation
 x = all_pts.geometry.x.values
 y = all_pts.geometry.y.values
 z = all_pts['ELEVATION'].values
 
-# Create interpolation grid
-margin = 0.005
-xi = np.linspace(x.min() - margin, x.max() + margin, 400)
-yi = np.linspace(y.min() - margin, y.max() + margin, 400)
+# Create union of all Phase 2 planting zone polygons for clipping
+zones_union = unary_union(final_poly.geometry)
+
+# Create interpolation grid bounded by the planting zones extent (not survey points)
+zb = zones_union.bounds  # minx, miny, maxx, maxy
+margin = 0.002
+xi = np.linspace(zb[0] - margin, zb[2] + margin, 500)
+yi = np.linspace(zb[1] - margin, zb[3] + margin, 500)
 xi_grid, yi_grid = np.meshgrid(xi, yi)
 
 # Interpolate using cubic method
 zi_grid = griddata((x, y), z, (xi_grid, yi_grid), method='cubic')
 
+# Clip interpolated surface to planting zone boundaries
+zone_mask = create_polygon_mask(zones_union, xi_grid, yi_grid)
+zi_grid_clipped = np.where(zone_mask, zi_grid, np.nan)
+
 # Create figure with two subplots: surface + histogram
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 10),
                                 gridspec_kw={'width_ratios': [3, 1]})
 
-# Left: Interpolated surface
+# Left: Interpolated surface (clipped)
 terrain_cmap = LinearSegmentedColormap.from_list('terrain_custom',
     ['#053061', '#2166AC', '#4393C3', '#92C5DE',  # deep to shallow water
      '#D1E5F0', '#F7F7F7',                        # near MSL
@@ -314,32 +346,31 @@ terrain_cmap = LinearSegmentedColormap.from_list('terrain_custom',
      '#B2182B', '#67001F'],                        # high ground
     N=256)
 
-im = ax1.pcolormesh(xi_grid, yi_grid, zi_grid, cmap=terrain_cmap,
+im = ax1.pcolormesh(xi_grid, yi_grid, zi_grid_clipped, cmap=terrain_cmap,
                      shading='auto', vmin=-3, vmax=3.5)
 
-# Overlay planting zone boundaries
-for idx, row in all_zones.iterrows():
+# Overlay planting zone boundaries (crisp white borders)
+for idx, row in final_poly.iterrows():
     gpd.GeoSeries([row.geometry]).plot(ax=ax1, facecolor='none',
-                                        edgecolor='white', linewidth=2)
-    gpd.GeoSeries([row.geometry]).plot(ax=ax1, facecolor='none',
-                                        edgecolor='#1B5E20', linewidth=1,
-                                        linestyle='--')
+                                        edgecolor='white', linewidth=2.5)
 
 # Plot survey points
 ax1.scatter(x, y, c='black', s=8, zorder=5, alpha=0.5, label='Survey Points')
 
-# Contour lines at key elevations
+# Contour lines at key elevations (using clipped grid)
 contour_levels = [-2, -1, 0, 0.3, 0.6, 1.0, 2.0, 3.0]
-# Mask NaN before contouring
-zi_masked = np.ma.masked_invalid(zi_grid)
+zi_masked = np.ma.masked_invalid(zi_grid_clipped)
 cs = ax1.contour(xi_grid, yi_grid, zi_masked, levels=contour_levels,
                   colors='black', linewidths=0.5, alpha=0.6)
 ax1.clabel(cs, inline=True, fontsize=7, fmt='%.1f m')
 
-# Highlight optimal planting elevation band with contour fill
-optimal_mask = (zi_grid >= 0.30) & (zi_grid <= 0.60)
-ax1.contour(xi_grid, yi_grid, zi_grid, levels=[0.30, 0.60],
+# Highlight optimal planting elevation band
+ax1.contour(xi_grid, yi_grid, zi_masked, levels=[0.30, 0.60],
             colors=['#1B5E20'], linewidths=2, linestyles='solid')
+
+# Set axis extent to the planting zones
+ax1.set_xlim(zb[0] - margin, zb[2] + margin)
+ax1.set_ylim(zb[1] - margin, zb[3] + margin)
 
 # Colorbar
 cbar = plt.colorbar(im, ax=ax1, shrink=0.7, pad=0.02, extend='both')
@@ -350,7 +381,7 @@ cbar.ax.text(1.5, 0.30, 'Optimal\nBand', transform=cbar.ax.get_yaxis_transform()
              fontsize=7, color='#1B5E20', fontweight='bold', va='bottom')
 
 ax1.set_title('Interpolated Elevation Surface (DEM)\n'
-              'Cubic Interpolation from 130 Survey Points',
+              'Cubic Interpolation from 130 Survey Points | Clipped to Planting Zones',
               fontsize=13, fontweight='bold', color='#0D47A1')
 ax1.set_xlabel('Longitude (E)', fontsize=10)
 ax1.set_ylabel('Latitude (N)', fontsize=10)
@@ -384,18 +415,11 @@ print("  -> dem_interpolated_surface.png")
 
 
 # ═══════════════════════════════════════════════════════════
-# DEM MAP 3: ELEVATION CLASSIFICATION MAP
+# DEM MAP 3: ELEVATION CLASSIFICATION MAP (CLIPPED TO PLANTING ZONES)
 # ═══════════════════════════════════════════════════════════
-print("[5/6] Creating DEM Elevation Classification Map...")
+print("[5/6] Creating DEM Elevation Classification Map (clipped to planting zones)...")
 
 fig, ax = plt.subplots(1, 1, figsize=(14, 10))
-
-# Classification zones
-class_colors = ['#053061', '#2166AC', '#4393C3',  # Sub-MSL (< 0m)
-                '#D1E5F0',                         # Low (0 to +0.30m)
-                '#4CAF50',                         # Optimal (+0.30 to +0.60m)
-                '#FDD835',                         # Marginal (+0.60 to +1.00m)
-                '#FF6F00', '#D84315', '#B71C1C']   # Above optimal (>+1.00m)
 
 class_cmap = LinearSegmentedColormap.from_list('class',
     ['#053061', '#2166AC', '#4393C3', '#D1E5F0',
@@ -403,29 +427,24 @@ class_cmap = LinearSegmentedColormap.from_list('class',
      '#FDD835', '#FF6F00', '#D84315', '#B71C1C'],
     N=256)
 
-# Use the same interpolated grid
-bounds = [-3, -1, 0, 0.15, 0.30, 0.60, 1.00, 2.00, 3.50]
-class_norm = BoundaryNorm(bounds, 256)
+# Use the same clipped interpolated grid
+bounds_cls = [-3, -1, 0, 0.15, 0.30, 0.60, 1.00, 2.00, 3.50]
+class_norm = BoundaryNorm(bounds_cls, 256)
 
-im = ax.pcolormesh(xi_grid, yi_grid, zi_grid, cmap=class_cmap,
+im = ax.pcolormesh(xi_grid, yi_grid, zi_grid_clipped, cmap=class_cmap,
                     norm=class_norm, shading='auto')
 
 # Overlay planting zone boundaries
-for idx, row in all_zones.iterrows():
+for idx, row in final_poly.iterrows():
     gpd.GeoSeries([row.geometry]).plot(ax=ax, facecolor='none',
-                                        edgecolor='black', linewidth=2)
-
-# Nursery
-nursery.plot(ax=ax, facecolor='none', edgecolor=NURSERY_COLOR, linewidth=2.5)
-
-# Control sites
-for idx, row in control.iterrows():
-    color = CONTROL_COLORS.get(row['NAME'], '#FF0000')
-    ax.plot(row['LONGITUDE'], row['LATITUDE'], marker='^', color=color,
-            markersize=12, markeredgecolor='white', markeredgewidth=1.5, zorder=10)
+                                        edgecolor='black', linewidth=2.5)
 
 # Survey points
 ax.scatter(x, y, c='black', s=6, zorder=5, alpha=0.4)
+
+# Set axis extent to planting zones
+ax.set_xlim(zb[0] - margin, zb[2] + margin)
+ax.set_ylim(zb[1] - margin, zb[3] + margin)
 
 # Colorbar with class labels
 cbar = plt.colorbar(im, ax=ax, shrink=0.7, pad=0.02, extend='both')
@@ -438,7 +457,6 @@ cbar.set_ticklabels(['Deep\n(<-1m)', 'Sub-MSL\n(-1 to 0m)',
                       'Above\n(1.0-2.0m)', 'High\n(>2.0m)'])
 
 # Area statistics per classification
-total_pts = len(all_pts)
 stats_lines = [
     f"ELEVATION CLASSIFICATION SUMMARY",
     f"{'='*35}",
@@ -456,7 +474,7 @@ ax.text(0.02, 0.97, '\n'.join(stats_lines), transform=ax.transAxes,
                   edgecolor='#333', alpha=0.92))
 
 ax.set_title('DEM Elevation Classification for Planting Suitability\n'
-             'Optimal Band: +0.30m to +0.60m MSL | Avicennia marina Establishment',
+             'Optimal Band: +0.30m to +0.60m MSL | Clipped to Planting Zones',
              fontsize=13, fontweight='bold', color='#0D47A1')
 ax.set_xlabel('Longitude (E)', fontsize=10)
 ax.set_ylabel('Latitude (N)', fontsize=10)
@@ -473,31 +491,25 @@ print("  -> dem_elevation_classification.png")
 
 
 # ═══════════════════════════════════════════════════════════
-# DEM MAP 4: PER-SITE ELEVATION ANALYSIS
+# DEM MAP 4: PER-SITE ELEVATION ANALYSIS (WITH INTERPOLATED DEM SURFACE)
 # ═══════════════════════════════════════════════════════════
-print("[6/6] Creating Per-Site Elevation Analysis...")
+print("[6/6] Creating Per-Site Elevation Analysis with DEM surfaces...")
 
-# Split survey points by proximity to each planting zone
-# Use Phase 2 final points (62 records) which are the Phase 2 survey points
-# and Abu Ali points (68 records) for the Abu Ali sites
+fig, axes = plt.subplots(2, 2, figsize=(16, 14))
 
-fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-
-# Phase 2 sites - identify which points belong to each zone
-phase2_pts = final_pts.copy()
-ali_survey = ali_pts.copy()
-
-# For Phase 2, we have 4 zones and their points
 site_configs = [
-    ("Phase 2 - Planting Zone 1", final_poly[final_poly['NAME'] == 'Planting_Zone_01'],
-     '#2E7D32'),
-    ("Phase 2 - Planting Zone 2", final_poly[final_poly['NAME'] == 'Planting_Zone_02'],
-     '#1B5E20'),
-    ("Phase 2 - Planting Zone 3", final_poly[final_poly['NAME'] == 'Planting_Zone_03'],
-     '#388E3C'),
-    ("Phase 2 - Planting Zone 4", final_poly[final_poly['NAME'] == 'Planting_Zone_04'],
-     '#43A047'),
+    ("Site 1", final_poly[final_poly['NAME'] == 'Planting_Zone_01'], '#2E7D32'),
+    ("Site 2", final_poly[final_poly['NAME'] == 'Planting_Zone_02'], '#1B5E20'),
+    ("Site 3", final_poly[final_poly['NAME'] == 'Planting_Zone_03'], '#388E3C'),
+    ("Site 4", final_poly[final_poly['NAME'] == 'Planting_Zone_04'], '#43A047'),
 ]
+
+site_terrain_cmap = LinearSegmentedColormap.from_list('site_terrain',
+    ['#053061', '#2166AC', '#4393C3', '#92C5DE',
+     '#D1E5F0', '#F7F7F7',
+     '#FDDBC7', '#F4A582', '#D6604D',
+     '#B2182B', '#67001F'],
+    N=256)
 
 for i, (title, zone_gdf, color) in enumerate(site_configs):
     ax = axes[i // 2][i % 2]
@@ -508,20 +520,43 @@ for i, (title, zone_gdf, color) in enumerate(site_configs):
         area_ha = zone_gdf['AREA_HA'].iloc[0]
 
         # Find points within or near this zone
-        # Use spatial join with buffer for nearby points
         zone_buffer = zone_gdf.copy()
         zone_buffer['geometry'] = zone_buffer.geometry.buffer(0.005)
         pts_in_zone = gpd.sjoin(all_pts, zone_buffer, how='inner', predicate='within')
 
         if len(pts_in_zone) > 0:
-            # Plot zone boundary
-            gpd.GeoSeries([zone_geom]).plot(ax=ax, facecolor='none',
-                                             edgecolor=color, linewidth=2.5)
+            # Create per-site interpolation grid clipped to site boundary
+            sb = zone_geom.bounds
+            sm = 0.001
+            sxi = np.linspace(sb[0] - sm, sb[2] + sm, 300)
+            syi = np.linspace(sb[1] - sm, sb[3] + sm, 300)
+            sxi_grid, syi_grid = np.meshgrid(sxi, syi)
 
-            # Plot points colored by elevation
+            # Interpolate (use linear for sites with fewer points)
+            method = 'cubic' if len(pts_in_zone) >= 10 else 'linear'
+            szi_grid = griddata(
+                (pts_in_zone.geometry.x.values, pts_in_zone.geometry.y.values),
+                pts_in_zone['ELEVATION'].values,
+                (sxi_grid, syi_grid), method=method
+            )
+
+            # Clip to site boundary
+            site_mask = create_polygon_mask(zone_geom, sxi_grid, syi_grid)
+            szi_clipped = np.where(site_mask, szi_grid, np.nan)
+
+            # Plot interpolated DEM surface
+            im = ax.pcolormesh(sxi_grid, syi_grid, szi_clipped,
+                              cmap=site_terrain_cmap, shading='auto',
+                              vmin=-1, vmax=2)
+
+            # Plot zone boundary (white border on top)
+            gpd.GeoSeries([zone_geom]).plot(ax=ax, facecolor='none',
+                                             edgecolor='white', linewidth=2.5)
+
+            # Plot survey points
             sc = ax.scatter(pts_in_zone.geometry.x, pts_in_zone.geometry.y,
-                           c=pts_in_zone['ELEVATION'], cmap='RdYlGn',
-                           s=80, zorder=5, edgecolors='#333', linewidth=0.5,
+                           c=pts_in_zone['ELEVATION'], cmap=site_terrain_cmap,
+                           s=50, zorder=5, edgecolors='white', linewidth=0.8,
                            vmin=-1, vmax=2)
 
             # Label each point
@@ -529,37 +564,51 @@ for i, (title, zone_gdf, color) in enumerate(site_configs):
                 ax.annotate(f"{pt['ELEVATION']:.1f}m",
                            xy=(pt.geometry.x, pt.geometry.y),
                            xytext=(4, 4), textcoords='offset points',
-                           fontsize=6, color='#333')
+                           fontsize=5.5, color='#333', fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.1', facecolor='white',
+                                     alpha=0.7, edgecolor='none'))
+
+            # Contour lines within site
+            szi_ma = np.ma.masked_invalid(szi_clipped)
+            try:
+                cs = ax.contour(sxi_grid, syi_grid, szi_ma,
+                               levels=[0.0, 0.30, 0.60, 1.0],
+                               colors=['#999', '#1B5E20', '#1B5E20', '#999'],
+                               linewidths=[0.5, 1.5, 1.5, 0.5], alpha=0.7)
+                ax.clabel(cs, inline=True, fontsize=6, fmt='%.1f m')
+            except ValueError:
+                pass
 
             # Colorbar
-            cbar = plt.colorbar(sc, ax=ax, shrink=0.7)
-            cbar.set_label('Elev. (m)', fontsize=8)
+            cbar = plt.colorbar(im, ax=ax, shrink=0.7, pad=0.02)
+            cbar.set_label('Elev. (m MSL)', fontsize=8)
             cbar.ax.axhline(y=0.30, color='#1B5E20', linewidth=2, linestyle='--')
             cbar.ax.axhline(y=0.60, color='#1B5E20', linewidth=2, linestyle='--')
+
+            # Set extent to site boundary
+            ax.set_xlim(sb[0] - sm, sb[2] + sm)
+            ax.set_ylim(sb[1] - sm, sb[3] + sm)
 
             # Stats
             elev_zone = pts_in_zone['ELEVATION']
             optimal_pct = ((elev_zone >= 0.30) & (elev_zone <= 0.60)).mean() * 100
-            stats = (f"n={len(pts_in_zone)} | Area: {area_ha:.0f} ha\n"
+            stats = (f"n={len(pts_in_zone)} | {area_ha:.0f} ha\n"
                      f"Elev: {elev_zone.min():.2f} to {elev_zone.max():.2f}m\n"
-                     f"Mean: {elev_zone.mean():.2f}m\n"
-                     f"In optimal band: {optimal_pct:.0f}%")
+                     f"Mean: {elev_zone.mean():.2f}m | Optimal: {optimal_pct:.0f}%")
             ax.text(0.02, 0.97, stats, transform=ax.transAxes, fontsize=7,
                     verticalalignment='top', family='monospace',
                     bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
                               edgecolor='#999', alpha=0.9))
 
-            # Optimal band shading
-            ax.axhspan(0.30, 0.60, alpha=0.0)  # placeholder for reference
-
-    ax.set_title(title, fontsize=11, fontweight='bold', color='#0D47A1')
+    ax.set_title(f'{title} - {area_ha:.1f} ha', fontsize=11, fontweight='bold',
+                 color='#0D47A1')
     ax.set_xlabel('Longitude (E)', fontsize=8)
     ax.set_ylabel('Latitude (N)', fontsize=8)
     ax.grid(True, alpha=0.3, linestyle='--')
     ax.tick_params(labelsize=7)
 
-fig.suptitle('Per-Site Elevation Analysis - Phase 2 Planting Zones\n'
-             'Optimal Planting Elevation: +0.30m to +0.60m MSL (green dashed lines on colorbar)',
+fig.suptitle('Per-Site DEM Elevation Analysis - Phase 2 Planting Zones\n'
+             'Interpolated Surface Clipped to Site Boundaries | Optimal Band: +0.30m to +0.60m MSL',
              fontsize=14, fontweight='bold', color='#0D47A1', y=1.02)
 
 plt.tight_layout()
