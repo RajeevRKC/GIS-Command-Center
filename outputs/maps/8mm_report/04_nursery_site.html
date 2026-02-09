@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_2be9fa4c651cf23a9f63e89071116b68 {
+                    position: relative;
+                    width: 1200.0px;
+                    height: 800.0px;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.css"/>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_2be9fa4c651cf23a9f63e89071116b68" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_2be9fa4c651cf23a9f63e89071116b68 = L.map(
+                "map_2be9fa4c651cf23a9f63e89071116b68",
+                {
+                    center: [27.30626975, 49.4885298],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 16,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_705bebd76d31c7d277f1fd47b41a5d4f = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Esri World Imagery",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_705bebd76d31c7d277f1fd47b41a5d4f.addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            var tile_layer_0271b10c14e6e8c23100b31d99c39ca6 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Esri Labels",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_0271b10c14e6e8c23100b31d99c39ca6.addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+        function geo_json_2741f7af211945744aa675bb7aacd958_styler(feature) {
+            switch(feature.id) {
+                default:
+                    return {"color": "#FFFFFF", "fillColor": "#8E24AA", "fillOpacity": 0.4, "weight": 3};
+            }
+        }
+
+        function geo_json_2741f7af211945744aa675bb7aacd958_onEachFeature(feature, layer) {
+
+            layer.on({
+            });
+        };
+        var geo_json_2741f7af211945744aa675bb7aacd958 = L.geoJson(null, {
+                onEachFeature: geo_json_2741f7af211945744aa675bb7aacd958_onEachFeature,
+            
+                style: geo_json_2741f7af211945744aa675bb7aacd958_styler,
+            ...{
+}
+        });
+
+        function geo_json_2741f7af211945744aa675bb7aacd958_add (data) {
+            geo_json_2741f7af211945744aa675bb7aacd958
+                .addData(data);
+        }
+            geo_json_2741f7af211945744aa675bb7aacd958_add({"bbox": [49.4871276, 27.3052655, 49.489932, 27.307274], "features": [{"bbox": [49.4871276, 27.3052655, 49.489932, 27.307274], "geometry": {"coordinates": [[[49.4877966, 27.3052655], [49.4871276, 27.3056097], [49.4877413, 27.3063753], [49.4881252, 27.3069802], [49.488671, 27.3067063], [49.4895351, 27.307274], [49.489932, 27.3070228], [49.489093, 27.3064455], [49.4877966, 27.3052655]]], "type": "Polygon"}, "id": "0", "properties": {}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+            geo_json_2741f7af211945744aa675bb7aacd958.bindTooltip(
+                `<div>
+                     Nursery: 2.17 ha | Capacity: 8,000,000 seedlings
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            geo_json_2741f7af211945744aa675bb7aacd958.addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            var circle_marker_5fbc5dc43de96b6dfddea0662d37f217 = L.circleMarker(
+                [27.3052655, 49.4877966],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_5fbc5dc43de96b6dfddea0662d37f217.bindTooltip(
+                `<div>
+                     Nursery Boundary P1: 27.305266N, 49.487797E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9043d9c16077fdcd3bec666cc15552ab = L.circleMarker(
+                [27.3056097, 49.4871276],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_9043d9c16077fdcd3bec666cc15552ab.bindTooltip(
+                `<div>
+                     Nursery Boundary P2: 27.305610N, 49.487128E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d60c1985c66ee0c2b262b52eaa9c83d9 = L.circleMarker(
+                [27.3063753, 49.4877413],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_d60c1985c66ee0c2b262b52eaa9c83d9.bindTooltip(
+                `<div>
+                     Nursery Boundary P3: 27.306375N, 49.487741E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_51166c08a70928822bce0d9069e4b18c = L.circleMarker(
+                [27.3069802, 49.4881252],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_51166c08a70928822bce0d9069e4b18c.bindTooltip(
+                `<div>
+                     Nursery Boundary P4: 27.306980N, 49.488125E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_10f4314daa6f0bea3ba80790387e5343 = L.circleMarker(
+                [27.3067063, 49.488671],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_10f4314daa6f0bea3ba80790387e5343.bindTooltip(
+                `<div>
+                     Nursery Boundary P5: 27.306706N, 49.488671E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6898e1bd014a3cdce86765a62cdd42e4 = L.circleMarker(
+                [27.307274, 49.4895351],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_6898e1bd014a3cdce86765a62cdd42e4.bindTooltip(
+                `<div>
+                     Nursery Boundary P6: 27.307274N, 49.489535E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f115ef41ecd0cc8a4d787c7187192892 = L.circleMarker(
+                [27.3070228, 49.489932],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_f115ef41ecd0cc8a4d787c7187192892.bindTooltip(
+                `<div>
+                     Nursery Boundary P7: 27.307023N, 49.489932E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2eadaee2dd6bbe71e714c020712601be = L.circleMarker(
+                [27.3064455, 49.489093],
+                {"bubblingMouseEvents": true, "color": "#FF6F00", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6F00", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_2eadaee2dd6bbe71e714c020712601be.bindTooltip(
+                `<div>
+                     Nursery Boundary P8: 27.306445N, 49.489093E
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_065ce49de1ae59fcf7a531a475879aec = L.circleMarker(
+                [27.306, 49.488],
+                {"bubblingMouseEvents": true, "color": "#1B5E20", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#1B5E20", "fillOpacity": 0.5, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            circle_marker_065ce49de1ae59fcf7a531a475879aec.bindTooltip(
+                `<div>
+                     Natural Mangrove Stand (~7 ha) - Propagule Source
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_00e0f574475c9e51c3f8b83d0c3fa0b7 = L.marker(
+                [27.3075, 49.489],
+                {
+}
+            ).addTo(map_2be9fa4c651cf23a9f63e89071116b68);
+        
+    
+            var div_icon_d248bcd4043cb089ce9ad55eb37b805f = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:14px;font-weight:bold;color:white;text-shadow:2px 2px 4px black;\"\u003eNursery (2.17 ha)\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_00e0f574475c9e51c3f8b83d0c3fa0b7.setIcon(div_icon_d248bcd4043cb089ce9ad55eb37b805f);
+            
+    
+            var measure_control_33f9ef8d27d4b5bb444e5bb8ac0cc536 = new L.Control.Measure(
+                {
+  "position": "topleft",
+  "primaryLengthUnit": "meters",
+  "secondaryLengthUnit": "miles",
+  "primaryAreaUnit": "sqmeters",
+  "secondaryAreaUnit": "acres",
+});
+            map_2be9fa4c651cf23a9f63e89071116b68.addControl(measure_control_33f9ef8d27d4b5bb444e5bb8ac0cc536);
+
+            // Workaround for using this plugin with Leaflet>=1.8.0
+            // https://github.com/ljagis/leaflet-measure/issues/171
+            L.Control.Measure.include({
+                _setCaptureMarkerIcon: function () {
+                    // disable autopan
+                    this._captureMarker.options.autoPanOnFocus = false;
+                    // default function
+                    this._captureMarker.setIcon(
+                        L.divIcon({
+                            iconSize: this._map.getSize().multiplyBy(2)
+                        })
+                    );
+                },
+            });
+
+        
+</script>
+</html>
